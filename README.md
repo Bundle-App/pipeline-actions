@@ -1,114 +1,73 @@
 
 <p align="center">
-  <a href="https://github.com/actions/javascript-action"><img alt="GitHub Actions status" src="https://github.com/actions/javascript-action/workflows/test-local/badge.svg"></a>
+  <a href="https://github.com/bundle-app/pipeline-actions">
+  <img alt="GitHub Actions status" src="https://github.com/bundle-app/pipeline-actions/workflows/test-local/badge.svg">
+  </a> 
 </p>
 
-# Create a JavaScript Action
+# Bundle Pipeline Actions
 
-Use this template to bootstrap the creation of a JavaScript action.:rocket:
+This is a collection of scripts that we use internally as part of our build pipeline. Many of these scripts are very specific to our use case, but can be modified to fit yours.
 
-This template includes tests, linting, a validation workflow, publishing, and versioning guidance.  
 
-If you are new, there's also a simpler introduction.  See the [Hello World JavaScript Action](https://github.com/actions/hello-world-javascript-action)
+# Actions
 
-## Create an action from this template
+## Secret Sharing
 
-Click the `Use this Template` and provide the new repo details for your action
+The secret sharing scripts allow various repositories to share their keys with each others. Repositories can publish their secret keys to a secure store using the `write-secret` action, while other repositories can read the secrets using the  `read-secret` action. 
 
-## Code in Master
+Please note that these scripts are only accessible to private repositories. This is to ensure that the reader has been granted access to our organization. Also note that the repository requesting a secret must be within the same organization.
 
-Install the dependencies  
-```bash
-$ npm install
-```
+### Write Secret
+This script allows you to store a github secret securely, and makes it accessible to other repositories within the organization.
 
-Run the tests :heavy_check_mark:  
-```bash
-$ npm test
+####Parameters
 
- PASS  ./index.test.js
-  ✓ throws invalid number (3ms)
-  ✓ wait 500 ms (504ms)
-  ✓ test runs (95ms)
+* name (required): specifies the name of the secret to write
+* value (required): the value of the secret.
+* ignore-failure (optional): do not exit with failure if writing fails, defaults to false.
+* token (optional): the repository token to use when accessing the secret store service. Defaults to `GITHUB_TOKEN` environment variable if available.
 
-...
-```
-
-## Change action.yml
-
-The action.yml contains defines the inputs and output for your action.
-
-Update the action.yml with your name, description, inputs and outputs for your action.
-
-See the [documentation](https://help.github.com/en/articles/metadata-syntax-for-github-actions)
-
-## Change the Code
-
-Most toolkit and CI/CD operations involve async operations so the action is run in an async function.
-
-```javascript
-const core = require('@actions/core');
-...
-
-async function run() {
-  try { 
-      ...
-  } 
-  catch (error) {
-    core.setFailed(error.message);
-  }
-}
-
-run()
-```
-
-See the [toolkit documentation](https://github.com/actions/toolkit/blob/master/README.md#packages) for the various packages.
-
-## Package for distribution
-
-GitHub Actions will run the entry point from the action.yml. Packaging assembles the code into one file that can be checked in to Git, enabling fast and reliable execution and preventing the need to check in node_modules.
-
-Actions are run from GitHub repos.  Packaging the action will create a packaged action in the dist folder.
-
-Run package
-
-```bash
-npm run package
-```
-
-Since the packaged index.js is run from the dist folder.
-
-```bash
-git add dist
-```
-
-## Create a release branch
-
-Users shouldn't consume the action from master since that would be latest code and actions can break compatibility between major versions.
-
-Checkin to the v1 release branch
-
-```bash
-$ git checkout -b v1
-$ git commit -a -m "v1 release"
-```
-
-```bash
-$ git push origin v1
-```
-
-Your action is now published! :rocket: 
-
-See the [versioning documentation](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
-
-## Usage
-
-You can now consume the action by referencing the v1 branch
+#### Usage Example
 
 ```yaml
-uses: actions/javascript-action@v1
-with:
-  milliseconds: 1000
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: bundle-app/pipeline-actions/write-secret@master
+        name: Write Secret
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          name: random-key
+          value: test-value
 ```
 
-See the [actions tab](https://github.com/actions/javascript-action/actions) for runs of this action! :rocket:
+### Read Secret
+This script allows you to read a github secret written by same or another repository securely.
+
+####Parameters
+
+* name (required): specifies the name of the secret to write
+* repository (required): the repository that published the secret.
+* ignore-failure (optional): do not exit with failure if reading fails, defaults to false.
+* token (optional): the repository token to use when accessing the secret store service. Defaults to `GITHUB_TOKEN` environment variable if available.
+
+#### Usage Example
+
+```yaml
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: bundle-app/pipeline-actions/read-secret@master
+        name: Read Secret
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          name: random-key
+          repository: api-specs
+          ignore-failure: true
+```
+

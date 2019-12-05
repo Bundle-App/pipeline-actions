@@ -14,6 +14,10 @@ async function run() {
     const name = core.getInput(INPUT_KEY_NAME);
     const value = core.getInput(INPUT_KEY_VALUE);
     const token = core.getInput(INPUT_KEY_AUTH_TOKEN) || process.env.GITHUB_TOKEN;
+    if (!token) {
+      return core.setFailed("token was not set and not present in env GITHUB_TOKEN");
+    }
+
     const ignoreFailure = core.getInput(INPUT_KEY_IGNORE_FAILURE) === 'true';
     const currentRepo = process.env.GITHUB_REPOSITORY;
 
@@ -27,12 +31,12 @@ async function run() {
       'content-type': 'application/json'
     });
 
-    if (response.statusCode !== 200) {
+    if (response.statusCode !== 201) {
       if (ignoreFailure) {
         console.log('::Error:: ', response.statusCode, '=>', response.data);
         core.setOutput('status', response.statusCode);
       } else {
-        core.setFailed(JSON.parse(response.data));
+        core.setFailed(response.data ? JSON.parse(response.data) : `Status Code = ${response.statusCode}`);
       }
     } else {
       core.setOutput('status', response.statusCode);
