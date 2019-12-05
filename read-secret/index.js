@@ -6,6 +6,7 @@ const core = require('@actions/core');
 const INPUT_KEY_NAME = 'name';
 const INPUT_KEY_REPO = 'repository';
 const INPUT_KEY_AUTH_TOKEN = 'token';
+const INPUT_KEY_IGNORE_FAILURE = 'ignore-failure';
 
 // most @actions toolkit packages have async methods
 async function run() {
@@ -13,6 +14,7 @@ async function run() {
     const name = core.getInput(INPUT_KEY_NAME);
     const repository = core.getInput(INPUT_KEY_REPO);
     const token = core.getInput(INPUT_KEY_AUTH_TOKEN) || process.env.GITHUB_TOKEN;
+    const ignoreFailure = core.getInput(INPUT_KEY_IGNORE_FAILURE) === 'true';
     const currentRepo = process.env.GITHUB_REPOSITORY;
 
     console.log(`:: Reading key: ${name} from repository: ${repository}, current repo: ${currentRepo}`);
@@ -25,7 +27,12 @@ async function run() {
     });
 
     if (response.statusCode !== 200) {
-      core.setFailed(JSON.parse(response.data));
+      if (ignoreFailure) {
+        console.log('::Error:: ', response.statusCode, '=>', response.data);
+        core.setOutput('value', '');
+      } else {
+        core.setFailed(JSON.parse(response.data));
+      }
     } else {
       core.setOutput('value', JSON.parse(response.data));
     }

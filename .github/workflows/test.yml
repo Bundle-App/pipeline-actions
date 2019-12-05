@@ -19,6 +19,7 @@ jobs:
         with:
           name: random-key
           repository: api-specs
+          ignore-failure: true
       - name: Display Log
         if: failure()
         run: echo "Failed as expected"
