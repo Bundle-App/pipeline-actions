@@ -34,7 +34,7 @@ module.exports =
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		return __webpack_require__(104);
+/******/ 		return __webpack_require__(280);
 /******/ 	};
 /******/
 /******/ 	// run startup
@@ -43,6 +43,14 @@ module.exports =
 /************************************************************************/
 /******/ ({
 
+/***/ 68:
+/***/ (function(__unusedmodule, exports) {
+
+exports.secretStoreUrl = 'https://v41enl2oo6.execute-api.us-east-2.amazonaws.com/default/secretstore';
+
+
+/***/ }),
+
 /***/ 87:
 /***/ (function(module) {
 
@@ -50,32 +58,61 @@ module.exports = require("os");
 
 /***/ }),
 
-/***/ 104:
+/***/ 211:
+/***/ (function(module) {
+
+module.exports = require("https");
+
+/***/ }),
+
+/***/ 280:
 /***/ (function(__unusedmodule, __unusedexports, __webpack_require__) {
 
-const core = __webpack_require__(470);
-const wait = __webpack_require__(949);
+const config = __webpack_require__(68);
+const {sendHttpRequest} = __webpack_require__(703);
 
+const core = __webpack_require__(470);
+
+const INPUT_KEY_NAME = 'name';
+const INPUT_KEY_REPO = 'repository';
+const INPUT_KEY_AUTH_TOKEN = 'token';
+const INPUT_KEY_CURRENT_REPO = 'current-repo';
 
 // most @actions toolkit packages have async methods
 async function run() {
-  try { 
-    const ms = core.getInput('milliseconds');
-    console.log(`Waiting ${ms} milliseconds ...`)
+  try {
+    const name = core.getInput(INPUT_KEY_NAME);
+    const repository = core.getInput(INPUT_KEY_REPO);
+    const token = core.getInput(INPUT_KEY_AUTH_TOKEN) || process.env.GITHUB_TOKEN;
+    const currentRepo = core.getInput(INPUT_KEY_CURRENT_REPO) || process.env.GITHUB_REPOSITORY;
 
-    core.debug((new Date()).toTimeString())
-    wait(parseInt(ms));
-    core.debug((new Date()).toTimeString())
+    core.debug(`Reading key: ${name} from repository: ${repository}, current repo: ${currentRepo}`);
+    const data = {repository, name, action: 'get'};
 
-    core.setOutput('time', new Date().toTimeString());
-  } 
-  catch (error) {
+    const response = await sendHttpRequest(config.secretStoreUrl, 'POST', JSON.stringify(data), {
+      'x-github-repository': currentRepo,
+      'x-github-token': token
+    });
+
+    if (response.statusCode !== 200) {
+      core.setFailed(JSON.parse(response.data));
+    } else {
+      core.setOutput('value', JSON.parse(response.data));
+    }
+
+  } catch (error) {
     core.setFailed(error.message);
   }
 }
 
-run()
+run();
 
+/***/ }),
+
+/***/ 417:
+/***/ (function(module) {
+
+module.exports = require("crypto");
 
 /***/ }),
 
@@ -336,6 +373,13 @@ exports.group = group;
 
 /***/ }),
 
+/***/ 605:
+/***/ (function(module) {
+
+module.exports = require("http");
+
+/***/ }),
+
 /***/ 622:
 /***/ (function(module) {
 
@@ -343,21 +387,81 @@ module.exports = require("path");
 
 /***/ }),
 
-/***/ 949:
+/***/ 703:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+const http = __webpack_require__(605);
+const https = __webpack_require__(211);
+const uriParser = __webpack_require__(835);
+const crypto = __webpack_require__(417);
+
+
+
+exports.sendHttpRequest = function (url, method = 'get', rawBody, headers = {}) {
+
+  const urlParts = uriParser.parse(url);
+  const client = urlParts.protocol === 'https:' ? https : http;
+  let port = urlParts.port;
+  if (!port) {
+    port = urlParts.protocol === 'https:' ? 443 : 80;
+  }
+
+  const options = {
+    hostname: urlParts.hostname,
+    port,
+    path: urlParts.path,
+    method: method.toUpperCase(),
+    headers: {Accept: '*/*', 'User-Agent': `NodeHttpLib/${process.version}`}
+  };
+
+  if (headers) {
+    for (let h in headers) {
+      options.headers[h] = headers[h];
+    }
+  }
+
+  return new Promise((resolve, reject) => {
+    let responseBody = '';
+    const req = client.request(options, function (res) {
+      console.log('STATUS:', res.statusCode);
+      res.setEncoding('utf8');
+
+      res.on('data', function (chunk) {
+        responseBody += chunk;
+      });
+
+      res.on('end', function () {
+        console.log('Request Completed');
+        resolve({
+          statusCode: res.statusCode,
+          data: responseBody,
+          headers: res.headers
+        });
+      });
+    });
+
+    req.on('error', function (e) {
+      console.log('Problem with request:', e.message);
+      e.data = responseBody;
+      reject(e);
+    });
+
+    if (rawBody) {
+      req.write(rawBody);
+    }
+    req.end();
+  });
+};
+
+exports.sha1Hex = (data) => crypto.createHash('sha1').update(data).digest('hex');
+exports.sha256Hex = (data) => crypto.createHash('sha256').update(data).digest('hex');
+
+/***/ }),
+
+/***/ 835:
 /***/ (function(module) {
 
-let wait = function(milliseconds) {
-  return new Promise((resolve, reject) => {
-    if (typeof(milliseconds) !== 'number') { 
-      throw new Error('milleseconds not a number'); 
-    }
-
-    setTimeout(() => resolve("done!"), milliseconds)
-  });
-}
-
-module.exports = wait;
-
+module.exports = require("url");
 
 /***/ })
 
