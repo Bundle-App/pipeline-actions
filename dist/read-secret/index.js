@@ -84,6 +84,10 @@ async function run() {
     const name = core.getInput(INPUT_KEY_NAME);
     const repository = core.getInput(INPUT_KEY_REPO);
     const token = core.getInput(INPUT_KEY_AUTH_TOKEN) || process.env.GITHUB_TOKEN;
+    if (!token) {
+      return core.setFailed("token was not set and not present in env GITHUB_TOKEN");
+    }
+
     const ignoreFailure = core.getInput(INPUT_KEY_IGNORE_FAILURE) === 'true';
     const currentRepo = process.env.GITHUB_REPOSITORY;
 
@@ -95,6 +99,7 @@ async function run() {
       'x-github-token': token,
       'content-type': 'application/json'
     });
+
 
     if (response.statusCode !== 200) {
       if (ignoreFailure) {
