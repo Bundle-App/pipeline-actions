@@ -90,7 +90,8 @@ async function run() {
 
     const response = await sendHttpRequest(config.secretStoreUrl, 'POST', JSON.stringify(data), {
       'x-github-repository': currentRepo,
-      'x-github-token': token
+      'x-github-token': token,
+      'content-type': 'application/json'
     });
 
     if (response.statusCode !== 200) {
