@@ -6,7 +6,6 @@ const core = require('@actions/core');
 const INPUT_KEY_NAME = 'name';
 const INPUT_KEY_REPO = 'repository';
 const INPUT_KEY_AUTH_TOKEN = 'token';
-const INPUT_KEY_CURRENT_REPO = 'current-repo';
 
 // most @actions toolkit packages have async methods
 async function run() {
@@ -14,7 +13,7 @@ async function run() {
     const name = core.getInput(INPUT_KEY_NAME);
     const repository = core.getInput(INPUT_KEY_REPO);
     const token = core.getInput(INPUT_KEY_AUTH_TOKEN) || process.env.GITHUB_TOKEN;
-    const currentRepo = core.getInput(INPUT_KEY_CURRENT_REPO) || process.env.GITHUB_REPOSITORY;
+    const currentRepo = process.env.GITHUB_REPOSITORY;
 
     console.log(`:: Reading key: ${name} from repository: ${repository}, current repo: ${currentRepo}`);
     const data = {repository, name, action: 'get'};

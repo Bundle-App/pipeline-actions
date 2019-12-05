@@ -13,10 +13,6 @@ inputs:
     description: 'GitHub Token to use to read this token'
     required: false
 
-  current-repo:
-    description: 'Source repository'
-    required: false
-
 outputs:
   value: # output will be available to future steps
     description: 'The value that was read'
