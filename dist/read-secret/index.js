@@ -86,7 +86,7 @@ async function run() {
     const token = core.getInput(INPUT_KEY_AUTH_TOKEN) || process.env.GITHUB_TOKEN;
     const currentRepo = core.getInput(INPUT_KEY_CURRENT_REPO) || process.env.GITHUB_REPOSITORY;
 
-    core.debug(`Reading key: ${name} from repository: ${repository}, current repo: ${currentRepo}`);
+    console.log(`:: Reading key: ${name} from repository: ${repository}, current repo: ${currentRepo}`);
     const data = {repository, name, action: 'get'};
 
     const response = await sendHttpRequest(config.secretStoreUrl, 'POST', JSON.stringify(data), {
