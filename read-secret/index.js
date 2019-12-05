@@ -17,7 +17,7 @@ async function run() {
     if (!token) {
       return core.setFailed("token was not set and not present in env GITHUB_TOKEN");
     }
-    
+
     const ignoreFailure = core.getInput(INPUT_KEY_IGNORE_FAILURE) === 'true';
     const currentRepo = process.env.GITHUB_REPOSITORY;
 

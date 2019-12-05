@@ -21,7 +21,7 @@ Please note that these scripts are only accessible to private repositories. This
 ### Write Secret
 This script allows you to store a github secret securely, and makes it accessible to other repositories within the organization.
 
-####Parameters
+#### Parameters
 
 * name (required): specifies the name of the secret to write
 * value (required): the value of the secret.
@@ -47,7 +47,7 @@ jobs:
 ### Read Secret
 This script allows you to read a github secret written by same or another repository securely.
 
-####Parameters
+#### Parameters
 
 * name (required): specifies the name of the secret to write
 * repository (required): the repository that published the secret.
