@@ -1,0 +1,27 @@
+name: 'Write Pipeline Secret'
+description: 'Write pipeline secret'
+inputs:
+  name:
+    description: 'Name of the key to write'
+    required: true
+
+  value:
+    description: 'Value of associated with name'
+    required: true
+
+  ignore-failure:
+    description: 'Set to true if you want this step to fail silently'
+    required: false
+    default: false
+
+  token:
+    description: 'GitHub Token to use to read this token'
+    required: false
+
+outputs:
+  status: # output will be available to future steps
+    description: 'Status code of the execution'
+
+runs:
+  using: 'node12'
+  main: '../dist/write-secret/index.js'

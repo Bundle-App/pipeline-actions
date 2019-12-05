@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint index.js",
-    "package": "ncc build read-secret/index.js -o dist/read-secret",
+    "package": "ncc build read-secret/index.js -o dist/read-secret && ncc build write-secret/index.js -o dist/write-secret",
     "test": "eslint index.js && jest"
   },
   "repository": {
