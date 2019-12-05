@@ -11,12 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-
       - run: npm ci
-      #    - run: npm test
       - uses: ./read-secret
+        name: Read Secret
         env:
-          GITHUB_TOKEN: {{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: '{{secrets.GITHUB_TOKEN}}'
         with:
           name: random-key
           repository: api-specs
