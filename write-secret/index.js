@@ -34,12 +34,12 @@ async function run() {
     if (response.statusCode !== 201) {
       if (ignoreFailure) {
         console.log('::Error:: ', response.statusCode, '=>', response.data);
-        core.setOutput('status', response.statusCode);
+        core.setOutput('status', `${response.statusCode}`);
       } else {
         core.setFailed(response.data ? JSON.parse(response.data) : `Status Code = ${response.statusCode}`);
       }
     } else {
-      core.setOutput('status', response.statusCode);
+      core.setOutput('status', `${response.statusCode}`);
     }
 
   } catch (error) {
